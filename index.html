@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>相続みっけ｜あなたの相続、やることが見えてくる</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700;900&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #223670;
+    --navy-dark: #172650;
+    --navy-light: #2d4a8a;
+    --gold: #D0A900;
+    --gold-light: #f0c800;
+    --cream: #faf8f3;
+    --warm-white: #ffffff;
+    --text-dark: #1a1a2e;
+    --text-mid: #4a4a6a;
+    --text-light: #8888aa;
+    --border: #e0ddd6;
+    --shadow: rgba(34,54,112,0.12);
+    --step-active: #223670;
+    --success: #2d7a4a;
+    --warning: #b85c00;
+    --danger: #c0392b;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Noto Sans JP', sans-serif;
+    background: var(--cream);
+    color: var(--text-dark);
+    min-height: 100vh;
+  }
+
+  /* ===== HEADER ===== */
+  .header {
+    background: var(--navy);
+    padding: 18px 20px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.2);
+  }
+  .header-logo {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 22px;
+    font-weight: 900;
+    color: var(--warm-white);
+    letter-spacing: 0.05em;
+  }
+  .header-logo span {
+    color: var(--gold);
+  }
+  .header-sub {
+    font-size: 11px;
+    color: rgba(255,255,255,0.65);
+    margin-left: 4px;
+  }
+  .header-badge {
+    margin-left: auto;
+    background: var(--gold);
+    color: var(--navy-dark);
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.05em;
+  }
+
+  /* ===== PROGRESS ===== */
+  .progress-bar {
+    background: var(--navy-dark);
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    gap: 0;
+  }
+  .prog-step {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    flex: 1;
+  }
+  .prog-dot {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    border: 2px solid rgba(255,255,255,0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.5);
+    transition: all 0.3s;
+    flex-shrink: 0;
+  }
+  .prog-dot.active {
+    background: var(--gold);
+    border-color: var(--gold);
+    color: var(--navy-dark);
+  }
+  .prog-dot.done {
+    background: rgba(208,169,0,0.4);
+    border-color: var(--gold);
+    color: var(--gold);
+  }
+  .prog-label {
+    font-size: 10px;
+    color: rgba(255,255,255,0.45);
+    margin-left: 6px;
+    white-space: nowrap;
+  }
+  .prog-label.active { color: var(--gold); font-weight: 700; }
+  .prog-line {
+    flex: 1;
+    height: 2px;
+    background: rgba(255,255,255,0.12);
+    margin: 0 6px;
+  }
+  .prog-line.done { background: rgba(208,169,0,0.45); }
+
+  /* ===== MAIN ===== */
+  .main {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 24px 16px 60px;
+  }
+
+  /* ===== STEP CARD ===== */
+  .step-card {
+    display: none;
+    animation: fadeIn 0.35s ease;
+  }
+  .step-card.active { display: block; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .step-head {
+    margin-bottom: 22px;
+  }
+  .step-num {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--gold);
+    letter-spacing: 0.1em;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .step-num::before {
+    content: '';
+    display: inline-block;
+    width: 18px;
+    height: 2px;
+    background: var(--gold);
+  }
+  .step-title {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--navy);
+    line-height: 1.45;
+    margin-bottom: 8px;
+  }
+  .step-desc {
+    font-size: 13px;
+    color: var(--text-mid);
+    line-height: 1.7;
+  }
+
+  /* ===== CHOICE CARDS ===== */
+  .choices {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .choice-card {
+    background: var(--warm-white);
+    border: 2px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 18px;
+    cursor: pointer;
+    transition: all 0.22s;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    position: relative;
+    overflow: hidden;
+  }
+  .choice-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 4px;
+    background: var(--border);
+    transition: background 0.22s;
+  }
+  .choice-card:hover {
+    border-color: var(--navy-light);
+    box-shadow: 0 4px 18px var(--shadow);
+    transform: translateY(-1px);
+  }
+  .choice-card:hover::before { background: var(--navy-light); }
+  .choice-card.selected {
+    border-color: var(--navy);
+    background: #f0f4ff;
+    box-shadow: 0 4px 20px var(--shadow);
+  }
+  .choice-card.selected::before { background: var(--gold); }
+
+  .choice-icon {
+    font-size: 28px;
+    flex-shrink: 0;
+    width: 44px;
+    text-align: center;
+  }
+  .choice-text {}
+  .choice-title {
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--text-dark);
+    margin-bottom: 2px;
+  }
+  .choice-sub {
+    font-size: 12px;
+    color: var(--text-light);
+  }
+  .choice-check {
+    margin-left: auto;
+    width: 22px;
+    height: 22px;
+    border: 2px solid var(--border);
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    font-size: 12px;
+    color: transparent;
+  }
+  .choice-card.selected .choice-check {
+    background: var(--navy);
+    border-color: var(--navy);
+    color: white;
+  }
+
+  /* Grid choices (財産選択) */
+  .choices-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  .choice-grid-card {
+    background: var(--warm-white);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 12px;
+    cursor: pointer;
+    transition: all 0.22s;
+    text-align: center;
+    position: relative;
+  }
+  .choice-grid-card:hover {
+    border-color: var(--navy-light);
+    box-shadow: 0 4px 14px var(--shadow);
+    transform: translateY(-1px);
+  }
+  .choice-grid-card.selected {
+    border-color: var(--navy);
+    background: #f0f4ff;
+    box-shadow: 0 4px 16px var(--shadow);
+  }
+  .grid-icon { font-size: 26px; margin-bottom: 6px; }
+  .grid-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-dark);
+    line-height: 1.3;
+  }
+  .grid-sub {
+    font-size: 10px;
+    color: var(--text-light);
+    margin-top: 2px;
+  }
+  .grid-badge {
+    position: absolute;
+    top: -1px;
+    right: -1px;
+    background: var(--navy);
+    color: white;
+    font-size: 9px;
+    padding: 2px 7px;
+    border-radius: 0 10px 0 8px;
+    font-weight: 700;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .choice-grid-card.selected .grid-badge { opacity: 1; }
+
+  /* Radio-style for small choices */
+  .radio-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+  }
+  .radio-btn {
+    background: var(--warm-white);
+    border: 2px solid var(--border);
+    border-radius: 30px;
+    padding: 8px 18px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--text-mid);
+  }
+  .radio-btn:hover { border-color: var(--navy-light); color: var(--navy); }
+  .radio-btn.selected {
+    background: var(--navy);
+    border-color: var(--navy);
+    color: white;
+    font-weight: 700;
+  }
+  .question-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 10px;
+  }
+
+  /* ===== BUTTONS ===== */
+  .btn-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 8px;
+  }
+  .btn-next {
+    flex: 1;
+    background: var(--navy);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 16px 24px;
+    font-size: 16px;
+    font-weight: 700;
+    font-family: 'Noto Sans JP', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .btn-next:hover {
+    background: var(--navy-light);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px var(--shadow);
+  }
+  .btn-next:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+  .btn-back {
+    background: transparent;
+    color: var(--text-mid);
+    border: 2px solid var(--border);
+    border-radius: 50px;
+    padding: 16px 20px;
+    font-size: 14px;
+    font-family: 'Noto Sans JP', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-back:hover { border-color: var(--navy); color: var(--navy); }
+
+  /* ===== RESULT ===== */
+  .result-hero {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+    border-radius: 18px;
+    padding: 28px 24px;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .result-hero::after {
+    content: '';
+    position: absolute;
+    top: -30px; right: -30px;
+    width: 120px; height: 120px;
+    border-radius: 50%;
+    background: rgba(208,169,0,0.12);
+  }
+  .result-tag {
+    display: inline-block;
+    background: var(--gold);
+    color: var(--navy-dark);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 14px;
+    border-radius: 20px;
+    margin-bottom: 14px;
+    letter-spacing: 0.05em;
+  }
+  .result-title {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: white;
+    line-height: 1.5;
+    margin-bottom: 10px;
+  }
+  .result-summary {
+    font-size: 13px;
+    color: rgba(255,255,255,0.8);
+    line-height: 1.8;
+  }
+
+  /* 期限アラート */
+  .deadline-alert {
+    background: #fff8e8;
+    border: 2px solid var(--gold);
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin-bottom: 16px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .deadline-icon { font-size: 22px; flex-shrink: 0; }
+  .deadline-text { font-size: 13px; color: var(--text-dark); line-height: 1.7; }
+  .deadline-text strong { color: var(--warning); }
+
+  /* やること一覧 */
+  .todo-section {
+    margin-bottom: 20px;
+  }
+  .todo-section-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-light);
+    letter-spacing: 0.1em;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .todo-section-title::before {
+    content: '';
+    display: inline-block;
+    width: 14px;
+    height: 2px;
+    background: var(--gold);
+  }
+  .todo-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .todo-item {
+    background: var(--warm-white);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 13px 16px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    position: relative;
+    overflow: hidden;
+  }
+  .todo-item::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+  }
+  .todo-item.urgent::before { background: var(--danger); }
+  .todo-item.important::before { background: var(--warning); }
+  .todo-item.normal::before { background: var(--navy); }
+  .todo-item.info::before { background: var(--text-light); }
+
+  .todo-num {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .todo-item.urgent .todo-num { background: #ffeaea; color: var(--danger); }
+  .todo-item.important .todo-num { background: #fff3e0; color: var(--warning); }
+  .todo-item.normal .todo-num { background: #eef2ff; color: var(--navy); }
+  .todo-item.info .todo-num { background: #f0f0f0; color: var(--text-light); }
+
+  .todo-body {}
+  .todo-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 3px;
+  }
+  .todo-detail {
+    font-size: 12px;
+    color: var(--text-mid);
+    line-height: 1.65;
+  }
+  .todo-deadline {
+    display: inline-block;
+    margin-top: 5px;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 10px;
+    border-radius: 20px;
+  }
+  .urgent .todo-deadline { background: #ffeaea; color: var(--danger); }
+  .important .todo-deadline { background: #fff3e0; color: var(--warning); }
+  .normal .todo-deadline { background: #eef2ff; color: var(--navy); }
+
+  /* 注意ポイント */
+  .attention-box {
+    background: #f8f4ff;
+    border: 1px solid #c8b8ff;
+    border-radius: 12px;
+    padding: 16px 18px;
+    margin-bottom: 16px;
+  }
+  .attention-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #5533aa;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .attention-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+  .attention-list li {
+    font-size: 12px;
+    color: var(--text-mid);
+    line-height: 1.6;
+    padding-left: 16px;
+    position: relative;
+  }
+  .attention-list li::before {
+    content: '▸';
+    position: absolute;
+    left: 0;
+    color: #7755cc;
+    font-size: 11px;
+  }
+
+  /* 専門家バナー */
+  .expert-banner {
+    background: linear-gradient(135deg, #1a2a50 0%, #2d4a8a 100%);
+    border-radius: 14px;
+    padding: 20px 20px;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .expert-banner-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 6px;
+  }
+  .expert-banner-sub {
+    font-size: 12px;
+    color: rgba(255,255,255,0.7);
+    margin-bottom: 14px;
+    line-height: 1.7;
+  }
+  .expert-tags {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .expert-tag {
+    background: rgba(208,169,0,0.2);
+    border: 1px solid rgba(208,169,0,0.5);
+    color: var(--gold);
+    font-size: 12px;
+    font-weight: 700;
+    padding: 6px 14px;
+    border-radius: 20px;
+  }
+
+  /* リスタートボタン */
+  .btn-restart {
+    width: 100%;
+    background: transparent;
+    color: var(--text-mid);
+    border: 2px solid var(--border);
+    border-radius: 50px;
+    padding: 14px 24px;
+    font-size: 14px;
+    font-family: 'Noto Sans JP', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 8px;
+  }
+  .btn-restart:hover { border-color: var(--navy); color: var(--navy); }
+
+  /* TOP画面 */
+  .top-hero {
+    text-align: center;
+    padding: 32px 16px 28px;
+  }
+  .top-icon { font-size: 56px; margin-bottom: 16px; }
+  .top-title {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 26px;
+    font-weight: 900;
+    color: var(--navy);
+    line-height: 1.4;
+    margin-bottom: 12px;
+  }
+  .top-title span { color: var(--gold); }
+  .top-sub {
+    font-size: 14px;
+    color: var(--text-mid);
+    line-height: 1.8;
+    margin-bottom: 28px;
+  }
+  .top-features {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 28px;
+  }
+  .top-feature {
+    background: var(--warm-white);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 8px;
+    text-align: center;
+  }
+  .top-feature-icon { font-size: 22px; margin-bottom: 6px; }
+  .top-feature-text { font-size: 11px; color: var(--text-mid); line-height: 1.4; font-weight: 500; }
+  .btn-start {
+    background: var(--navy);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 18px 40px;
+    font-size: 17px;
+    font-weight: 700;
+    font-family: 'Noto Sans JP', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 100%;
+    max-width: 340px;
+    box-shadow: 0 6px 24px var(--shadow);
+  }
+  .btn-start:hover {
+    background: var(--navy-light);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 32px var(--shadow);
+  }
+  .top-note {
+    font-size: 11px;
+    color: var(--text-light);
+    margin-top: 12px;
+  }
+
+  /* footer */
+  .footer {
+    text-align: center;
+    padding: 20px;
+    font-size: 11px;
+    color: var(--text-light);
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="header-logo">相続<span>みっけ</span></div>
+    <div class="header-sub">あなたの相続、やることが見えてくる</div>
+  </div>
+  <div class="header-badge">無料で使える</div>
+</div>
+
+<div class="progress-bar" id="progressBar" style="display:none;">
+  <div class="prog-step">
+    <div class="prog-dot" id="pd1">1</div>
+    <div class="prog-label" id="pl1">きっかけ</div>
+  </div>
+  <div class="prog-line" id="pline1"></div>
+  <div class="prog-step">
+    <div class="prog-dot" id="pd2">2</div>
+    <div class="prog-label" id="pl2">財産の種類</div>
+  </div>
+  <div class="prog-line" id="pline2"></div>
+  <div class="prog-step">
+    <div class="prog-dot" id="pd3">3</div>
+    <div class="prog-label" id="pl3">状況</div>
+  </div>
+  <div class="prog-line" id="pline3"></div>
+  <div class="prog-step">
+    <div class="prog-dot" id="pd4">4</div>
+    <div class="prog-label" id="pl4">やること</div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- TOP -->
+  <div class="step-card active" id="step0">
+    <div class="top-hero">
+      <div class="top-icon">🏠</div>
+      <div class="top-title">相続のこと、<br><span>何から始めればいい？</span></div>
+      <div class="top-sub">親が亡くなった。土地がある。兄弟がいる。<br>「何をすればいいか」がわかる、相続ナビです。<br>4ステップで、あなたのやることが見えてきます。</div>
+      <div class="top-features">
+        <div class="top-feature">
+          <div class="top-feature-icon">📋</div>
+          <div class="top-feature-text">やること一覧が出てくる</div>
+        </div>
+        <div class="top-feature">
+          <div class="top-feature-icon">⏰</div>
+          <div class="top-feature-text">期限・締め切りもわかる</div>
+        </div>
+        <div class="top-feature">
+          <div class="top-feature-icon">🔒</div>
+          <div class="top-feature-text">個人情報の入力なし</div>
+        </div>
+      </div>
+      <button class="btn-start" onclick="goStep(1)">🔍 診断スタート</button>
+      <div class="top-note">※ このアプリは一般的な情報提供です。個別のご相談は専門家にご確認ください。</div>
+    </div>
+  </div>
+
+  <!-- STEP1: きっかけ -->
+  <div class="step-card" id="step1">
+    <div class="step-head">
+      <div class="step-num">STEP 1</div>
+      <div class="step-title">今の状況に近いのは<br>どれですか？</div>
+      <div class="step-desc">最も近いものを1つ選んでください。</div>
+    </div>
+    <div class="choices" id="choices1">
+      <div class="choice-card" onclick="selectChoice('trigger','recent',this)">
+        <div class="choice-icon">💔</div>
+        <div class="choice-text">
+          <div class="choice-title">最近、家族が亡くなった</div>
+          <div class="choice-sub">手続きを急いで進めなければならない</div>
+        </div>
+        <div class="choice-check">✓</div>
+      </div>
+      <div class="choice-card" onclick="selectChoice('trigger','plan',this)">
+        <div class="choice-icon">🗂️</div>
+        <div class="choice-text">
+          <div class="choice-title">将来の相続を準備したい</div>
+          <div class="choice-sub">生前に整理・対策をしておきたい</div>
+        </div>
+        <div class="choice-check">✓</div>
+      </div>
+      <div class="choice-card" onclick="selectChoice('trigger','trouble',this)">
+        <div class="choice-icon">😰</div>
+        <div class="choice-text">
+          <div class="choice-title">相続でもめそう・もめている</div>
+          <div class="choice-sub">兄弟や親族と意見が割れている</div>
+        </div>
+        <div class="choice-check">✓</div>
+      </div>
+      <div class="choice-card" onclick="selectChoice('trigger','unknown',this)">
+        <div class="choice-icon">🤔</div>
+        <div class="choice-text">
+          <div class="choice-title">とにかく相続について知りたい</div>
+          <div class="choice-sub">基本からまず理解したい</div>
+        </div>
+        <div class="choice-check">✓</div>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn-back" onclick="goStep(0)">← 戻る</button>
+      <button class="btn-next" id="btn1" onclick="goStep(2)" disabled>次へ　→</button>
+    </div>
+  </div>
+
+  <!-- STEP2: 財産の種類 -->
+  <div class="step-card" id="step2">
+    <div class="step-head">
+      <div class="step-num">STEP 2</div>
+      <div class="step-title">財産の種類を<br>すべて選んでください</div>
+      <div class="step-desc">複数選択OK。だいたいで構いません。</div>
+    </div>
+    <div class="choices-grid" id="choices2">
+      <div class="choice-grid-card" onclick="toggleAsset('land',this)">
+        <div class="grid-badge">✓</div>
+        <div class="grid-icon">🏠</div>
+        <div class="grid-label">土地・建物</div>
+        <div class="grid-sub">不動産全般</div>
+      </div>
+      <div class="choice-grid-card" onclick="toggleAsset('farm',this)">
+        <div class="grid-badge">✓</div>
+        <div class="grid-icon">🌾</div>
+        <div class="grid-label">農地・山林</div>
+        <div class="grid-sub">田畑・山・森</div>
+      </div>
+      <div class="choice-grid-card" onclick="toggleAsset('bank',this)">
+        <div class="grid-badge">✓</div>
+        <div class="grid-icon">🏦</div>
+        <div class="grid-label">預貯金・現金</div>
+        <div class="grid-sub">銀行・郵便局など</div>
+      </div>
+      <div class="choice-grid-card" onclick="toggleAsset('stock',this)">
+        <div class="grid-badge">✓</div>
+        <div class="grid-icon">📈</div>
+        <div class="grid-label">株・投資信託</div>
+        <div class="grid-sub">有価証券全般</div>
+      </div>
+      <div class="choice-grid-card" onclick="toggleAsset('insurance',this)">
+        <div class="grid-badge">✓</div>
+        <div class="grid-icon">🛡️</div>
+        <div class="grid-label">生命保険</div>
+        <div class="grid-sub">死亡保険金</div>
+      </div>
+      <div class="choice-grid-card" onclick="toggleAsset('pension',this)">
+        <div class="grid-badge">✓</div>
+        <div class="grid-icon">💼</div>
+        <div class="grid-label">退職金</div>
+        <div class="grid-sub">死亡退職金など</div>
+      </div>
+      <div class="choice-grid-card" onclick="toggleAsset('goods',this)">
+        <div class="grid-badge">✓</div>
+        <div class="grid-icon">🚗</div>
+        <div class="grid-label">車・貴金属・美術品</div>
+        <div class="grid-sub">動産全般</div>
+      </div>
+      <div class="choice-grid-card" onclick="toggleAsset('business',this)">
+        <div class="grid-badge">✓</div>
+        <div class="grid-icon">🏢</div>
+        <div class="grid-label">会社・事業・自社株</div>
+        <div class="grid-sub">事業承継</div>
+      </div>
+      <div class="choice-grid-card" onclick="toggleAsset('debt',this)">
+        <div class="grid-badge">✓</div>
+        <div class="grid-icon">📋</div>
+        <div class="grid-label">借金・ローン</div>
+        <div class="grid-sub">マイナスの財産</div>
+      </div>
+      <div class="choice-grid-card" onclick="toggleAsset('unknown_asset',this)">
+        <div class="grid-badge">✓</div>
+        <div class="grid-icon">❓</div>
+        <div class="grid-label">よくわからない</div>
+        <div class="grid-sub">まだ把握できていない</div>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn-back" onclick="goStep(1)">← 戻る</button>
+      <button class="btn-next" id="btn2" onclick="goStep(3)" disabled>次へ　→</button>
+    </div>
+  </div>
+
+  <!-- STEP3: 状況 -->
+  <div class="step-card" id="step3">
+    <div class="step-head">
+      <div class="step-num">STEP 3</div>
+      <div class="step-title">もう少し状況を<br>教えてください</div>
+      <div class="step-desc">だいたいで大丈夫です。</div>
+    </div>
+
+    <div class="question-label">👨‍👩‍👧 相続人は何人ですか？（亡くなった方の財産を受け取る側）</div>
+    <div class="radio-row" id="q_heirs">
+      <div class="radio-btn" onclick="selectRadio('heirs','1',this)">1人</div>
+      <div class="radio-btn" onclick="selectRadio('heirs','2-3',this)">2〜3人</div>
+      <div class="radio-btn" onclick="selectRadio('heirs','4+',this)">4人以上</div>
+      <div class="radio-btn" onclick="selectRadio('heirs','unknown',this)">わからない</div>
+    </div>
+
+    <div class="question-label">📄 遺言書はありましたか？</div>
+    <div class="radio-row" id="q_will">
+      <div class="radio-btn" onclick="selectRadio('will','yes',this)">あった</div>
+      <div class="radio-btn" onclick="selectRadio('will','no',this)">なかった</div>
+      <div class="radio-btn" onclick="selectRadio('will','unsure',this)">わからない</div>
+    </div>
+
+    <div class="question-label">⏰ 亡くなってからどのくらい経ちますか？</div>
+    <div class="radio-row" id="q_days">
+      <div class="radio-btn" onclick="selectRadio('days','within1m',this)">1ヶ月以内</div>
+      <div class="radio-btn" onclick="selectRadio('days','1-3m',this)">1〜3ヶ月</div>
+      <div class="radio-btn" onclick="selectRadio('days','3-10m',this)">3〜10ヶ月</div>
+      <div class="radio-btn" onclick="selectRadio('days','over10m',this)">10ヶ月以上</div>
+      <div class="radio-btn" onclick="selectRadio('days','future',this)">まだ生きている（準備中）</div>
+    </div>
+
+    <div class="question-label">👫 配偶者（夫または妻）は存命ですか？</div>
+    <div class="radio-row" id="q_spouse">
+      <div class="radio-btn" onclick="selectRadio('spouse','yes',this)">存命</div>
+      <div class="radio-btn" onclick="selectRadio('spouse','no',this)">亡くなっている</div>
+      <div class="radio-btn" onclick="selectRadio('spouse','unmarried',this)">未婚・離別</div>
+    </div>
+
+    <div class="btn-row" style="margin-top:20px;">
+      <button class="btn-back" onclick="goStep(2)">← 戻る</button>
+      <button class="btn-next" id="btn3" onclick="generateResult()" disabled>やることを見る　→</button>
+    </div>
+  </div>
+
+  <!-- STEP4: 結果 -->
+  <div class="step-card" id="step4">
+    <!-- 結果はJSで動的生成 -->
+    <div id="resultContent"></div>
+    <button class="btn-restart" onclick="goStep(0)">🔄 最初からやり直す</button>
+  </div>
+
+</div>
+
+<div class="footer">
+  相続みっけ｜Smile Plus Consulting　©2025 SPC<br>
+  ※このアプリは一般的な情報の提供を目的とし、個別の法的・税務的アドバイスではありません。
+</div>
+
+<script>
+  // ===== STATE =====
+  const state = {
+    trigger: null,
+    assets: [],
+    heirs: null,
+    will: null,
+    days: null,
+    spouse: null
+  };
+
+  // ===== NAVIGATION =====
+  function goStep(n) {
+    document.querySelectorAll('.step-card').forEach(el => el.classList.remove('active'));
+    document.getElementById('step' + n).classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (n >= 1) {
+      document.getElementById('progressBar').style.display = 'flex';
+      updateProgress(n);
+    } else {
+      document.getElementById('progressBar').style.display = 'none';
+    }
+  }
+
+  function updateProgress(step) {
+    for (let i = 1; i <= 4; i++) {
+      const dot = document.getElementById('pd' + i);
+      const label = document.getElementById('pl' + i);
+      if (i < step) {
+        dot.className = 'prog-dot done';
+        dot.textContent = '✓';
+        label.className = 'prog-label';
+      } else if (i === step) {
+        dot.className = 'prog-dot active';
+        dot.textContent = i;
+        label.className = 'prog-label active';
+      } else {
+        dot.className = 'prog-dot';
+        dot.textContent = i;
+        label.className = 'prog-label';
+      }
+    }
+    for (let i = 1; i <= 3; i++) {
+      const line = document.getElementById('pline' + i);
+      line.className = i < step ? 'prog-line done' : 'prog-line';
+    }
+  }
+
+  // ===== CHOICE SELECTION =====
+  function selectChoice(key, value, el) {
+    el.closest('.choices').querySelectorAll('.choice-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    state[key] = value;
+    const btnMap = { trigger: 'btn1' };
+    if (btnMap[key]) document.getElementById(btnMap[key]).disabled = false;
+  }
+
+  function toggleAsset(asset, el) {
+    el.classList.toggle('selected');
+    if (el.classList.contains('selected')) {
+      if (!state.assets.includes(asset)) state.assets.push(asset);
+    } else {
+      state.assets = state.assets.filter(a => a !== asset);
+    }
+    document.getElementById('btn2').disabled = state.assets.length === 0;
+  }
+
+  function selectRadio(key, value, el) {
+    el.closest('.radio-row').querySelectorAll('.radio-btn').forEach(b => b.classList.remove('selected'));
+    el.classList.add('selected');
+    state[key] = value;
+    checkStep3();
+  }
+
+  function checkStep3() {
+    const ready = state.heirs && state.will && state.days && state.spouse;
+    document.getElementById('btn3').disabled = !ready;
+  }
+
+  // ===== RESULT GENERATION =====
+  function generateResult() {
+    goStep(4);
+    const html = buildResultHTML();
+    document.getElementById('resultContent').innerHTML = html;
+  }
+
+  function buildResultHTML() {
+    const { trigger, assets, heirs, will, days, spouse } = state;
+
+    const hasLand = assets.includes('land');
+    const hasFarm = assets.includes('farm');
+    const hasBank = assets.includes('bank');
+    const hasStock = assets.includes('stock');
+    const hasInsurance = assets.includes('insurance');
+    const hasBusiness = assets.includes('business');
+    const hasDebt = assets.includes('debt');
+    const isUnknown = assets.includes('unknown_asset');
+    const isFuture = days === 'future';
+    const isUrgent = days === 'within1m';
+    const isOver10m = days === 'over10m';
+    const isTrouble = trigger === 'trouble';
+    const multiHeirs = heirs === '2-3' || heirs === '4+';
+    const noWill = will === 'no' || will === 'unsure';
+
+    // ===== SUMMARY TEXT =====
+    let summaryLines = [];
+    if (isFuture) summaryLines.push('生前の準備段階として、対策を整理しました。');
+    else if (isUrgent) summaryLines.push('亡くなってから1ヶ月以内です。やることが多く、急ぎの手続きもあります。');
+    else if (isOver10m) summaryLines.push('10ヶ月が近い・または過ぎた可能性があります。申告期限に注意が必要です。');
+    else summaryLines.push('亡くなってから数ヶ月が経過しています。申告期限（10ヶ月）を意識して進めましょう。');
+    if (hasLand) summaryLines.push('土地・建物があるため、路線価や固定資産税評価が重要なポイントになります。');
+    if (hasBusiness) summaryLines.push('事業・会社がある場合は、事業承継の手続きも必要です。専門家への相談を強くお勧めします。');
+    if (hasDebt) summaryLines.push('借金・ローンがある場合は「相続放棄」の検討が必要な場合があります。3ヶ月以内の判断が必要です。');
+    if (isTrouble) summaryLines.push('相続トラブルが発生・懸念される場合は、弁護士への相談が有効です。');
+
+    // ===== DEADLINE ALERT =====
+    let deadlineHTML = '';
+    if (!isFuture) {
+      let deadlineMsg = '';
+      if (isUrgent) {
+        deadlineMsg = `<strong>⚠️ 相続放棄の期限：3ヶ月以内</strong>（借金がある場合は特に注意）<br>相続税申告の期限は<strong>亡くなった日から10ヶ月以内</strong>です。今すぐ財産の把握を始めましょう。`;
+      } else if (days === '1-3m') {
+        deadlineMsg = `<strong>相続放棄の期限まであと少しです（3ヶ月以内）</strong><br>相続税申告は<strong>10ヶ月以内</strong>。財産目録の作成と、税理士への相談を急ぎましょう。`;
+      } else if (days === '3-10m') {
+        deadlineMsg = `相続税の申告期限（<strong>10ヶ月以内</strong>）が近づいています。<br>遺産分割協議がまだなら早めに。申告が必要かどうかを税理士に確認しましょう。`;
+      } else if (isOver10m) {
+        deadlineMsg = `<strong>⚠️ 10ヶ月の申告期限が迫っているか、すでに過ぎている可能性があります。</strong><br>申告が必要な場合は、すぐに税理士に相談してください。延滞税が発生することもあります。`;
+      }
+      if (deadlineMsg) {
+        deadlineHTML = `
+          <div class="deadline-alert">
+            <div class="deadline-icon">⏰</div>
+            <div class="deadline-text">${deadlineMsg}</div>
+          </div>`;
+      }
+    }
+
+    // ===== TODO LIST =====
+    const todos = [];
+
+    if (!isFuture) {
+      // 共通・早急
+      todos.push({ level: 'urgent', title: '死亡届の提出（7日以内）', detail: '市区町村役場に死亡届を提出。病院の死亡診断書が必要です。', deadline: '死亡から7日以内' });
+
+      if (hasDebt) {
+        todos.push({ level: 'urgent', title: '相続放棄・限定承認の検討', detail: '借金がある場合、相続放棄（すべて放棄）か限定承認（プラスの範囲で相続）を検討。家庭裁判所への申述が必要。', deadline: '3ヶ月以内' });
+      }
+
+      todos.push({ level: 'important', title: '遺言書の有無の確認', detail: will === 'yes' ? '遺言書があります。公正証書遺言は公証役場、自筆証書遺言は家庭裁判所で検認（開封）手続きが必要です。' : '引き出し・金庫・貸金庫・法務局の「遺言書保管制度」を確認しましょう。', deadline: '早めに' });
+
+      todos.push({ level: 'important', title: '相続人の確定（戸籍の収集）', detail: '被相続人の出生〜死亡までの戸籍謄本を全部集めます。相続人が誰かを正確に確認するための重要な作業です。', deadline: '早めに' });
+
+      todos.push({ level: 'important', title: '財産目録の作成', detail: [
+        hasLand ? '不動産：固定資産税納税通知書・登記簿謄本を確認' : '',
+        hasBank ? '預貯金：通帳・残高証明書を集める' : '',
+        hasStock ? '有価証券：証券会社に残高証明書を請求' : '',
+        hasInsurance ? '生命保険：保険会社に死亡保険金を請求' : '',
+        hasFarm ? '農地・山林：農業委員会への届出も必要な場合あり' : '',
+        hasDebt ? '借金・ローン：残高・連帯保証も確認' : '',
+        isUnknown ? '財産が不明な場合は弁護士・司法書士に相談を' : ''
+      ].filter(Boolean).join('<br>'), deadline: '3ヶ月以内目安' });
+
+      if (multiHeirs && noWill) {
+        todos.push({ level: 'important', title: '遺産分割協議', detail: '相続人全員で話し合い、誰が何を相続するかを決めます。合意したら「遺産分割協議書」を作成し、全員の実印で署名・押印します。', deadline: '申告前まで' });
+      }
+
+      if (hasLand || hasBank || hasStock || hasBusiness) {
+        todos.push({ level: 'normal', title: '相続税の申告が必要か確認', detail: '基礎控除（3,000万円＋600万円×相続人数）を超える財産があれば申告が必要。都市部の不動産は路線価が高く対象になりやすいです。税理士への相談をお勧めします。', deadline: '10ヶ月以内' });
+      }
+
+      if (hasLand || hasFarm) {
+        todos.push({ level: 'normal', title: '不動産の名義変更（相続登記）', detail: '2024年4月から相続登記が義務化されました。亡くなった日から3年以内に法務局へ申請が必要です。司法書士に依頼するのが一般的です。', deadline: '3年以内（義務）' });
+      }
+
+      if (hasBank) {
+        todos.push({ level: 'normal', title: '銀行口座の名義変更・解約', detail: '被相続人の銀行口座は凍結されます。各銀行の相続窓口で手続きを行います。遺産分割協議書が必要な場合があります。', deadline: '早めに' });
+      }
+
+      if (hasInsurance) {
+        todos.push({ level: 'normal', title: '生命保険金の請求', detail: '生命保険金は「みなし相続財産」として相続税の対象になる場合があります。非課税枠（500万円×相続人数）を活用できます。', deadline: '3年以内（時効）' });
+      }
+
+      if (hasBusiness) {
+        todos.push({ level: 'urgent', title: '事業・会社の引き継ぎ', detail: '会社の株式・経営権の移転が必要。取引先・金融機関への連絡も急ぎます。事業承継は特例が使える場合もあるため、税理士・弁護士に早めに相談を。', deadline: '早急に' });
+      }
+
+    } else {
+      // 生前準備
+      todos.push({ level: 'normal', title: '財産の棚卸し・エンディングノートの作成', detail: '不動産・預貯金・有価証券・保険などをリスト化。家族が困らないようにまとめておきましょう。', deadline: '' });
+      todos.push({ level: 'normal', title: '遺言書の作成を検討する', detail: '公正証書遺言（公証役場）が一番確実です。特に子どもが複数いる場合や、特定の人に多く渡したい場合は必須です。', deadline: '' });
+      if (hasLand || hasBusiness) {
+        todos.push({ level: 'important', title: '生前贈与・相続税対策を検討', detail: '土地・会社がある場合は、生前贈与や小規模宅地等の特例が使えるか税理士に相談を。早めほど有利です。', deadline: '' });
+      }
+      todos.push({ level: 'info', title: '家族に財産の場所を伝えておく', detail: '通帳・保険証券・権利書・ローン残高などの場所を家族と共有しておきましょう。', deadline: '' });
+    }
+
+    if (isTrouble) {
+      todos.push({ level: 'urgent', title: '弁護士に相談する', detail: '相続トラブル（争族）は早めの法律相談が重要です。遺産分割調停・審判への対応も弁護士が必要です。', deadline: '早急に' });
+    }
+
+    // ===== ATTENTION =====
+    const attentions = [];
+    if (hasLand) attentions.push('都市部の土地（路線価が高い地域）は相続税の申告対象になりやすいです');
+    if (hasFarm) attentions.push('農地は農業委員会への届出が必要な場合があります（市町村による）');
+    if (hasStock) attentions.push('証券口座の名義変更は証券会社ごとに手続きが異なります');
+    if (hasInsurance) attentions.push('生命保険の受取人が指定されていれば、遺産分割と別で動きます');
+    if (noWill && multiHeirs) attentions.push('遺言書がない場合、相続人全員の合意が必要です。1人でも反対すると手続きが進まなくなります');
+    if (hasBusiness) attentions.push('自社株は評価が複雑です。必ず税理士に評価を依頼してください');
+    if (spouse === 'yes') attentions.push('配偶者は「配偶者の税額軽減」が使えます（最低1億6,000万円まで非課税）');
+
+    // ===== BUILD HTML =====
+    let html = '';
+
+    // ヒーロー
+    html += `
+    <div class="result-hero">
+      <div class="result-tag">📋 あなたの相続ナビ結果</div>
+      <div class="result-title">やること ${todos.length} 項目が<br>見えてきました</div>
+      <div class="result-summary">${summaryLines.join('<br>')}</div>
+    </div>`;
+
+    // 期限アラート
+    html += deadlineHTML;
+
+    // やること一覧
+    html += `<div class="todo-section">
+      <div class="todo-section-title">やること一覧</div>
+      <div class="todo-list">`;
+
+    todos.forEach((todo, i) => {
+      html += `
+        <div class="todo-item ${todo.level}">
+          <div class="todo-num">${i + 1}</div>
+          <div class="todo-body">
+            <div class="todo-title">${todo.title}</div>
+            <div class="todo-detail">${todo.detail}</div>
+            ${todo.deadline ? `<div class="todo-deadline">📅 ${todo.deadline}</div>` : ''}
+          </div>
+        </div>`;
+    });
+
+    html += `</div></div>`;
+
+    // 注意ポイント
+    if (attentions.length > 0) {
+      html += `
+      <div class="attention-box">
+        <div class="attention-title">💡 あなたのケースで特に注意したいこと</div>
+        <ul class="attention-list">
+          ${attentions.map(a => `<li>${a}</li>`).join('')}
+        </ul>
+      </div>`;
+    }
+
+    // 専門家バナー
+    const experts = [];
+    if (hasLand || hasStock || hasBusiness) experts.push('税理士（相続税）');
+    if (hasLand || hasBank) experts.push('司法書士（名義変更）');
+    if (isTrouble || hasDebt) experts.push('弁護士（争族・放棄）');
+    if (hasFarm) experts.push('農業委員会');
+    if (experts.length === 0) experts.push('税理士', '司法書士');
+
+    html += `
+    <div class="expert-banner">
+      <div class="expert-banner-title">🤝 相談するなら、この専門家</div>
+      <div class="expert-banner-sub">複雑な相続ほど、早めの専門家相談が<br>時間とお金の節約につながります。</div>
+      <div class="expert-tags">
+        ${experts.map(e => `<div class="expert-tag">${e}</div>`).join('')}
+      </div>
+    </div>`;
+
+    return html;
+  }
+</script>
+
+</body>
+</html>

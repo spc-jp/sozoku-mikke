@@ -223,6 +223,34 @@ body {
 .paywall-features li::before { content: '✓'; position: absolute; left: 0; color: var(--success); font-weight: 700; }
 .btn-stripe { width: 100%; background: var(--gold); color: var(--navy-dark); border: none; border-radius: 50px; padding: 16px; font-size: 15px; font-weight: 700; font-family: 'Noto Sans JP', sans-serif; cursor: pointer; margin-bottom: 14px; transition: all 0.2s; }
 .btn-stripe:hover { background: var(--gold-light); transform: translateY(-1px); }
+
+/* ===== 2択プラン選択UI（ライト/プロ） ===== */
+.plan-choice { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+.plan-card { background: var(--warm-white); border: 2px solid var(--border); border-radius: 14px; padding: 14px 16px; position: relative; transition: all 0.2s; }
+.plan-card.lite { border-color: #b8c8ff; background: var(--navy-bg); }
+.plan-card.pro { border-color: var(--gold); background: linear-gradient(135deg, var(--navy-dark), var(--navy-light)); color: white; }
+.plan-card.pro .plan-name { color: white; }
+.plan-card.pro .plan-desc { color: rgba(255,255,255,0.78); }
+.plan-card.pro .plan-feature { color: rgba(255,255,255,0.88); }
+.plan-badge { position: absolute; top: -8px; right: 14px; background: var(--gold); color: var(--navy-dark); font-size: 10px; font-weight: 900; padding: 3px 10px; border-radius: 12px; letter-spacing: 0.05em; }
+.plan-name { font-family: 'Noto Serif JP', serif; font-size: 15px; font-weight: 700; color: var(--navy); margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+.plan-price { display: flex; align-items: baseline; gap: 4px; margin-bottom: 8px; }
+.plan-price-num { font-family: 'Noto Serif JP', serif; font-size: 24px; font-weight: 900; color: var(--gold); }
+.plan-price-unit { font-size: 11px; opacity: 0.75; }
+.plan-desc { font-size: 11px; line-height: 1.6; margin-bottom: 10px; color: var(--text-mid); }
+.plan-features { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
+.plan-feature { font-size: 12px; padding-left: 16px; position: relative; line-height: 1.5; color: var(--text-mid); }
+.plan-feature::before { content: '✓'; position: absolute; left: 0; color: var(--gold); font-weight: 700; }
+.btn-plan { display: block; width: 100%; text-align: center; padding: 11px; border-radius: 30px; font-size: 13px; font-weight: 700; font-family: 'Noto Sans JP', sans-serif; cursor: pointer; transition: all 0.2s; text-decoration: none; border: none; }
+.btn-plan-lite { background: var(--navy); color: white; }
+.btn-plan-lite:hover { background: var(--navy-light); transform: translateY(-1px); }
+.btn-plan-pro { background: var(--gold); color: var(--navy-dark); }
+.btn-plan-pro:hover { background: var(--gold-light); transform: translateY(-1px); }
+.plan-divider { text-align: center; font-size: 11px; color: var(--text-light); margin: 6px 0 10px; }
+
+/* ライト版バッジ */
+.lite-badge-style { background: rgba(184,200,255,0.3) !important; border: 1px solid rgba(184,200,255,0.5); color: #fff !important; }
+
 .paywall-pass-row { display: flex; gap: 8px; }
 .paywall-pass-input { flex: 1; border: 2px solid var(--border); border-radius: 30px; padding: 10px 16px; font-size: 13px; font-family: 'Noto Sans JP', sans-serif; outline: none; }
 .paywall-pass-input:focus { border-color: var(--navy); }
@@ -490,26 +518,8 @@ body {
 
 <!-- PAYWALL -->
 <div class="paywall-overlay" id="paywallOverlay">
-  <div class="paywall-card">
-    <div class="paywall-title">🔓 無料体験が終了しました</div>
-    <div class="paywall-sub">引き続きAIアドバイザーを使うには<br>Pro版をご利用ください。</div>
-    <div class="paywall-price">
-      <div class="paywall-price-num">¥2,980</div>
-      <div class="paywall-price-unit">/ 月（税込）・いつでも解約可能</div>
-    </div>
-    <ul class="paywall-features">
-      <li>AIに何度でも質問できる（無制限）</li>
-      <li>あなたの状況に合わせた具体的アドバイス</li>
-      <li>相続税の概算シミュレーション対応</li>
-      <li>必要な書類チェックリストを自動生成</li>
-      <li>専門家紹介サービス（オプション）</li>
-    </ul>
-    <button class="btn-stripe" onclick="openStripe()">💳 今すぐPro版に申し込む</button>
-    <div class="paywall-pass-row">
-      <input type="password" class="paywall-pass-input" id="passInput" placeholder="パスワードをお持ちの方はこちら">
-      <button class="btn-pass" onclick="checkPass()">解除</button>
-    </div>
-    <div class="paywall-err" id="passErr"></div>
+  <div class="paywall-card" id="paywallCard">
+    <!-- 内容はJSで動的生成 -->
   </div>
 </div>
 
@@ -528,16 +538,41 @@ body {
 // ===== CONFIG =====
 const API_ENDPOINT = 'https://sozoku-mikke-api.yymmatsu.workers.dev';
 const STRIPE_URL   = 'https://buy.stripe.com/eVqdR89uOgzH6SPg7qcV20M';
-const UNLOCK_PASS  = 'spc2025';
-const FREE_LIMIT   = 3;
+const NOTE_URL     = 'https://note.com/_yoshibon/n/n-sozoku-mikke-lite'; // ←note記事URL（後で差し替え）
+const UNLOCK_PASS  = 'spc2025';            // 既存Pro版パスワード（変更しない）
+const LITE_PASS    = 'sozoku-lite-2k26';   // ライト版（note買い切り）パスワード
+const FREE_LIMIT   = 3;                    // 無料お試し回数
+const LITE_LIMIT   = 50;                   // ライト版の利用上限
 const LS_KEY       = 'sozoku_mikke_uses';
-const LS_UNLOCKED  = 'sozoku_mikke_pro';
+const LS_UNLOCKED  = 'sozoku_mikke_pro';   // 既存ユーザー互換用（残す）
+const LS_LICENSE   = 'sozoku_mikke_license'; // none / lite / pro
 
 // ===== STATE =====
 const S = { trigger:null, assets:[], heirs:null, will:null, days:null, spouse:null, area:null };
 let chatHistory = [];
 let useCount = parseInt(localStorage.getItem(LS_KEY) || '0');
-let isUnlocked = localStorage.getItem(LS_UNLOCKED) === 'true';
+
+// ライセンス状態（none / lite / pro）
+let license = localStorage.getItem(LS_LICENSE) || 'none';
+
+// 既存Proユーザーの自動マイグレーション（spc2025解除済みの方を守る）
+if (license === 'none' && localStorage.getItem(LS_UNLOCKED) === 'true') {
+  license = 'pro';
+  localStorage.setItem(LS_LICENSE, 'pro');
+}
+
+// 旧コード互換用フラグ（true=制限なし利用可）
+let isUnlocked = (license === 'pro');
+
+// ===== ライセンス判定ヘルパー =====
+function getLimit() {
+  if (license === 'pro') return Infinity;
+  if (license === 'lite') return LITE_LIMIT;
+  return FREE_LIMIT;
+}
+function canUse() {
+  return useCount < getLimit();
+}
 
 // ===== NAV =====
 function goStep(n) {
@@ -863,12 +898,17 @@ function initChat() {
 
 function updateTrialBadge() {
   const b = document.getElementById('trialBadge');
-  if (isUnlocked) {
+  if (license === 'pro') {
     b.textContent = '✨ Pro版';
     b.style.background = 'rgba(208,169,0,0.3)';
+  } else if (license === 'lite') {
+    const rem = Math.max(0, LITE_LIMIT - useCount);
+    b.textContent = `🌿 ライト ${rem}回`;
+    b.style.background = 'rgba(184,200,255,0.25)';
   } else {
     const rem = Math.max(0, FREE_LIMIT - useCount);
     b.textContent = `残り${rem}回`;
+    b.style.background = 'rgba(255,255,255,0.12)';
   }
   updateTrialBanner();
 }
@@ -878,11 +918,41 @@ function updateTrialBanner() {
   if (!inner) return;
 
   // Pro版はバナー非表示
-  if (isUnlocked) {
+  if (license === 'pro') {
     inner.innerHTML = '';
     return;
   }
 
+  // ライト版の表示
+  if (license === 'lite') {
+    const liteRem = Math.max(0, LITE_LIMIT - useCount);
+
+    // ライト版上限到達
+    if (liteRem === 0) {
+      inner.innerHTML = `
+        <div class="trial-banner-end">
+          <div class="trial-banner-end-text">
+            🌿 ライト版50回ご利用ありがとうございました
+            <span>引き続きご利用にはPro版へのお申し込みが必要です</span>
+          </div>
+          <button class="btn-banner-stripe" onclick="openStripe()">Pro版へ →</button>
+        </div>`;
+      return;
+    }
+
+    // ライト版利用中（残数あり）
+    inner.innerHTML = `
+      <div class="trial-banner-free">
+        <div class="trial-banner-icon">🌿</div>
+        <div class="trial-banner-text">
+          <div class="trial-banner-title">ライト版 残り${liteRem}回（全${LITE_LIMIT}回）</div>
+          <div class="trial-banner-sub">無制限プランをご希望ならPro版へ</div>
+        </div>
+      </div>`;
+    return;
+  }
+
+  // 未購入（none）の表示
   const rem = Math.max(0, FREE_LIMIT - useCount);
   const used = Math.min(useCount, FREE_LIMIT);
 
@@ -892,9 +962,9 @@ function updateTrialBanner() {
       <div class="trial-banner-end">
         <div class="trial-banner-end-text">
           ⚠️ 無料体験が終了しました
-          <span>引き続きご利用にはPro版へのお申し込みが必要です</span>
+          <span>ライト版¥980（買い切り）またはPro版¥2,980/月をご利用ください</span>
         </div>
-        <button class="btn-banner-stripe" onclick="openStripe()">ご購入はこちら →</button>
+        <button class="btn-banner-stripe" onclick="showPaywall()">プラン選択 →</button>
       </div>`;
     return;
   }
@@ -940,7 +1010,7 @@ async function sendMessage() {
   const text = input.value.trim();
   if (!text) return;
 
-  if (!isUnlocked && useCount >= FREE_LIMIT) { showPaywall(); return; }
+  if (license !== 'pro' && !canUse()) { showPaywall(); return; }
 
   input.value = '';
   input.style.height = 'auto';
@@ -968,9 +1038,10 @@ async function sendMessage() {
     addMessage('ai', reply);
     chatHistory.push({ role: 'assistant', content: reply });
 
-    if (!isUnlocked) {
+    if (license !== 'pro') {
       useCount++;
       localStorage.setItem(LS_KEY, useCount);
+      // ライト版で上限到達時、次回送信時にPaywall表示
       updateTrialBadge();
     }
   } catch(e) {
@@ -1005,18 +1076,126 @@ function addTyping() {
 function removeTyping(id) { const el = document.getElementById(id); if (el) el.remove(); }
 
 // ===== PAYWALL =====
-function showPaywall() { document.getElementById('paywallOverlay').classList.add('show'); }
-function openStripe() { window.open(STRIPE_URL, '_blank'); }
-function checkPass() {
-  if (document.getElementById('passInput').value === UNLOCK_PASS) {
-    isUnlocked = true;
-    localStorage.setItem(LS_UNLOCKED, 'true');
-    document.getElementById('paywallOverlay').classList.remove('show');
-    document.getElementById('passErr').textContent = '';
-    updateTrialBadge();
-  } else {
-    document.getElementById('passErr').textContent = 'パスワードが違います。';
+function showPaywall() {
+  renderPaywall();
+  document.getElementById('paywallOverlay').classList.add('show');
+}
+
+function renderPaywall() {
+  const card = document.getElementById('paywallCard');
+
+  // ライト版で上限到達時 → Pro版誘導専用UI
+  if (license === 'lite') {
+    card.innerHTML = `
+      <div class="paywall-title">🌱 ライト版50回ご利用ありがとうございました</div>
+      <div class="paywall-sub">引き続きAIアドバイザーをご利用になるには<br>Pro版へのアップグレードをご検討ください。</div>
+      <div class="plan-choice">
+        <div class="plan-card pro">
+          <div class="plan-badge">UPGRADE</div>
+          <div class="plan-name">✨ Pro版（サブスクリプション）</div>
+          <div class="plan-price">
+            <span class="plan-price-num">¥2,980</span>
+            <span class="plan-price-unit">/ 月（税込・いつでも解約可）</span>
+          </div>
+          <div class="plan-features">
+            <div class="plan-feature">AIに何度でも質問できる（無制限）</div>
+            <div class="plan-feature">相続税の概算シミュレーション</div>
+            <div class="plan-feature">書類チェックリストを自動生成</div>
+            <div class="plan-feature">専門家紹介サービス（オプション）</div>
+          </div>
+          <button class="btn-plan btn-plan-pro" onclick="openStripe()">💳 Pro版に申し込む</button>
+        </div>
+      </div>
+      <div class="plan-divider">─ すでにPro版パスワードをお持ちの方 ─</div>
+      <div class="paywall-pass-row">
+        <input type="password" class="paywall-pass-input" id="passInput" placeholder="Pro版パスワード">
+        <button class="btn-pass" onclick="checkPass()">解除</button>
+      </div>
+      <div class="paywall-err" id="passErr"></div>
+      <button class="btn-restart" onclick="closePaywall()" style="margin-top:14px;">閉じる</button>
+    `;
+    return;
   }
+
+  // 未購入（none）→ ライト/プロの2択UI
+  card.innerHTML = `
+    <div class="paywall-title">🔓 無料体験が終了しました</div>
+    <div class="paywall-sub">ご購入方法をお選びください</div>
+    <div class="plan-choice">
+      <div class="plan-card lite">
+        <div class="plan-name">🌿 ライト版（買い切り）</div>
+        <div class="plan-price">
+          <span class="plan-price-num">¥980</span>
+          <span class="plan-price-unit">一度きりのお支払い</span>
+        </div>
+        <div class="plan-features">
+          <div class="plan-feature">AI相談 50回まで利用可能</div>
+          <div class="plan-feature">基本機能フル搭載</div>
+          <div class="plan-feature">noteで購入できます</div>
+        </div>
+        <button class="btn-plan btn-plan-lite" onclick="openNote()">📖 noteで購入する</button>
+      </div>
+      <div class="plan-card pro">
+        <div class="plan-badge">おすすめ</div>
+        <div class="plan-name">✨ Pro版（サブスク）</div>
+        <div class="plan-price">
+          <span class="plan-price-num">¥2,980</span>
+          <span class="plan-price-unit">/ 月（解約自由）</span>
+        </div>
+        <div class="plan-features">
+          <div class="plan-feature">無制限利用</div>
+          <div class="plan-feature">相続税シミュレーション</div>
+          <div class="plan-feature">書類チェックリスト自動生成</div>
+        </div>
+        <button class="btn-plan btn-plan-pro" onclick="openStripe()">💳 Pro版に申し込む</button>
+      </div>
+    </div>
+    <div class="plan-divider">─ すでにご購入の方 ─</div>
+    <div class="paywall-pass-row">
+      <input type="password" class="paywall-pass-input" id="passInput" placeholder="パスワードを入力">
+      <button class="btn-pass" onclick="checkPass()">解除</button>
+    </div>
+    <div class="paywall-err" id="passErr"></div>
+    <button class="btn-restart" onclick="closePaywall()" style="margin-top:14px;">閉じる</button>
+  `;
+}
+
+function closePaywall() {
+  document.getElementById('paywallOverlay').classList.remove('show');
+}
+
+function openStripe() { window.open(STRIPE_URL, '_blank'); }
+function openNote()   { window.open(NOTE_URL, '_blank'); }
+
+function checkPass() {
+  const input = document.getElementById('passInput').value.trim();
+  const errEl = document.getElementById('passErr');
+
+  // Pro版パスワード（既存ユーザー含む）
+  if (input === UNLOCK_PASS) {
+    license = 'pro';
+    isUnlocked = true;
+    localStorage.setItem(LS_LICENSE, 'pro');
+    localStorage.setItem(LS_UNLOCKED, 'true'); // 既存互換
+    closePaywall();
+    errEl.textContent = '';
+    updateTrialBadge();
+    return;
+  }
+
+  // ライト版パスワード（note買い切り購入者）
+  if (input === LITE_PASS) {
+    license = 'lite';
+    useCount = 0; // ライト版開始時に回数リセット（50回フル利用可）
+    localStorage.setItem(LS_LICENSE, 'lite');
+    localStorage.setItem(LS_KEY, '0');
+    closePaywall();
+    errEl.textContent = '';
+    updateTrialBadge();
+    return;
+  }
+
+  errEl.textContent = 'パスワードが違います。';
 }
 
 // ===== RESTART =====
